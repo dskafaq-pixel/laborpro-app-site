@@ -169,7 +169,13 @@
     const app = document.getElementById('AS');
     const login = document.getElementById('LS');
     if (app) app.style.display = 'none';
-    if (login) login.style.display = 'flex';
+    if (login) {
+      login.style.display = 'flex';
+      // Keep the local-only username/password form hidden while signed out.
+      for (const child of login.children) {
+        if (child.id !== 'lp-cloud-panel') child.hidden = true;
+      }
+    }
     if (typeof A !== 'undefined' && A.cu) A.logout();
     status('Sign in to LaborPro Cloud before opening the local app.');
   }
