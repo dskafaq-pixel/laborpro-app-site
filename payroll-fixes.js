@@ -17,8 +17,8 @@
     if (typeof calculateSalary === 'function' && !calculateSalary.__laborProGuarded) {
       const guardedCalculateSalary = function (laborId, month) {
         const existing = D.g('salaries').find(s => s.lid === laborId && s.month === month);
-        if (existing?.paid) {
-          N.w('This salary is already marked paid. Reset it before recalculating.');
+        if (existing && (existing.paid || D.g('payments').some(p => p.vno === `SAL-${existing.id}`))) {
+          N.w('This salary already has a payment record. Reconcile it before recalculating.');
           return;
         }
         const retained = existing ? {
