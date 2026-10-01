@@ -1,16 +1,26 @@
-# LaborPro app site
+# LaborPro Cloud
 
-LaborPro is the workshop and payroll app. This clean deployment repository contains only the app files and the site deployment workflow; the existing private development repository and Raw Material project are not changed.
+LaborPro is a browser-based workshop and payroll ledger. This is a separate LaborPro project and Supabase project. Do not replace or edit the Raw Material Inventory project.
 
-## App URL
+Hosted app: [Open LaborPro](https://dskafaq-pixel.github.io/laborpro-app-site/)
 
-After this repository is public and the first GitHub Pages workflow succeeds, open: https://dskafaq-pixel.github.io/laborpro-app-site/
+## Deployment setup
 
-## Publish steps
+1. Keep `LaborPro.html`, `cloud-sync.js`, and `payroll-fixes.js` in the same HTTPS-hosted folder. The GitHub Pages workflow copies these files and adds cache-busting versions. A local `file://` URL cannot use cloud authentication.
+2. The browser client uses the public publishable key for Supabase project `fjulqqnsbtiemrrgscxp`. This key is intended to be public. Never put a service-role/secret key or database password in HTML, JavaScript, GitHub, or static hosting.
+3. In the **LaborPro** Supabase project, run all of `schema.sql` in SQL Editor after each schema change. It enables owner-only reads and routes snapshot writes through a version-checked RPC. Verify the query succeeds before syncing. Keep public signups disabled; use the existing private Auth account.
+4. Sign in on every device using that same Supabase Auth account. Authentication is the only app login. The legacy local user list and demo credentials are discarded by the cloud client; staff-level accounts are not supported in this build.
+5. On the first device, review the blank workspace and select **Upload device data** only when you are ready to start cloud storage. A clean install no longer seeds fake workers, payroll transactions, or company contact information. Other signed-in devices load the cloud records.
+6. When two devices edit the same collection at once, the app blocks automatic overwrite and asks whether to load the cloud copy or replace it with this device’s copy. Separate collections sync independently.
 
-1. Set this repository's visibility to Public (required for Pages on the current GitHub plan). This makes the app HTML, browser sync code, and deployment workflow viewable by anyone. The Supabase publishable key in browser code is intended to be public; never add a service-role key, database password, worker export, or payroll backup.
-2. In Settings > Pages, select GitHub Actions as the build and deployment source. The workflow deploys LaborPro.html as index.html and copies cloud-sync.js beside it.
-3. In the LaborPro Supabase project, add https://dskafaq-pixel.github.io/laborpro-app-site/ under Authentication > URL Configuration as the Site URL and allowed redirect URL. Keep public signups disabled and use the existing private Auth account.
-4. Wait for the Deploy LaborPro workflow to finish successfully, then sign in to the app using the LaborPro Supabase Auth email and password.
+## Security and limits
 
-The app uses owner-scoped Supabase RLS and Realtime sync. Do not use it for live payroll until you have verified sign-in, sync from a second device, backups, and all payroll calculations against your records.
+- Supabase Auth identifies the owner. RLS scopes database rows to that account; table writes are denied directly and the RPC checks identity, allowed key format, payload size, and expected version.
+- The `users` collection is never synced. No service-role key is present in client files.
+- Dynamic HTML inserted into the app is sanitized with DOMPurify. Inline handlers are retained only when they match templates in the app source; unrecognized handlers and unsafe URL/style content are removed.
+- CSV export escapes spreadsheet formula prefixes. Restore checks file size, collection names, and basic record shapes.
+- Each collection is still stored as a single JSON snapshot. Conflict checks prevent silent concurrent replacement, but payroll-critical use needs independent review of calculations, backups, access controls, and recovery procedures. This build has not received a formal security audit or payroll/accounting certification.
+- This is a single-owner deployment. Separate staff identities, server-enforced staff roles, and record-level merge are not implemented.
+- Payroll review found unresolved calculation rules: attendance pay can deduct absences twice, and the configured salary method, tax, and overtime switches are not consistently applied. Do not use this build to calculate or pay live payroll until the owner confirms the intended rules and these calculations are corrected and verified.
+
+This repository is public so GitHub Pages can host the app. Its source and publishable Supabase key are visible to everyone. Never commit worker exports, payroll backups, `.env` files, database passwords, or Supabase secret/service-role keys.
