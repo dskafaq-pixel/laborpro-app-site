@@ -3,7 +3,7 @@
   'use strict';
 
   function install() {
-    if (!window.D || !window.U || !window.N) return false;
+    if (typeof D === 'undefined' || typeof U === 'undefined' || typeof N === 'undefined') return false;
 
     // Use the device's local calendar date; toISOString() can report yesterday
     // in time zones east of UTC during the early morning.
