@@ -29,8 +29,8 @@ jobs:
         run: |
           mkdir _site
           cp LaborPro.html _site/index.html
-          cp cloud-sync.js _site/cloud-sync.js
-          sed -i "s|cloud-sync.js|cloud-sync.js?v=${GITHUB_SHA}|" _site/index.html
+          cp cloud-sync.js payroll-fixes.js _site/
+          sed -i "s|cloud-sync.js|cloud-sync.js?v=${GITHUB_SHA}|; s|payroll-fixes.js|payroll-fixes.js?v=${GITHUB_SHA}|" _site/index.html
           touch _site/.nojekyll
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
